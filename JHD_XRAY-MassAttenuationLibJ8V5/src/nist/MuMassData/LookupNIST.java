@@ -142,7 +142,7 @@ public class LookupNIST extends AtomData{
 	 */
 	public double getAtomAbsEdge(String theAtom, String theEdge)
 	{
-		int atmIndex = getSymbolIndex(theAtom);
+		int atmIndex = getAtomSymbolIndex(theAtom);
 		int edgeIndex = getAbsEdgeIndex(theEdge);
 		if(atmIndex >=0  && edgeIndex >=0 )
 		{

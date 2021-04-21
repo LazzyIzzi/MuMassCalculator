@@ -171,7 +171,7 @@ public class AtomData {
 	
 	//***********************************************************************
 
-	protected int getSymbolIndex(String theAtomSymbol)
+	protected int getAtomSymbolIndex(String theAtomSymbol)
 	{
 		int i, symbolIndex = -1;
 		
@@ -193,8 +193,8 @@ public class AtomData {
 	 * @param symbol The symbol for an atom e.g. "AU" for gold
 	 * @return boolean true if atom symbol is recognized, false if incorrect atom symbol
 	 */
-	public boolean setSymbol(String symbol) {
-		int i = getSymbolIndex(symbol);
+	public boolean setAtomSymbol(String symbol) {
+		int i = getAtomSymbolIndex(symbol);
 		if(i>=0 && i < atomName.length ) {
 			this.symbol = symbol;
 			this.name = atomName[i];
@@ -210,7 +210,7 @@ public class AtomData {
 	 * Sets the number of atoms in a chemical formula
 	 * @param count Sets the number of atoms in a chemical formula
 	 */
-	public void setCount(double count) {
+	public void setAtomCount(double count) {
 		this.count = count;
 	}
 
@@ -256,7 +256,7 @@ public class AtomData {
 	 * Returns the atom selected by setSymbol
 	 * @return The current atom's symbol
 	 */
-	public String getSymbol() {
+	public String getAtomSymbol() {
 		return symbol;
 	}
 
@@ -265,7 +265,7 @@ public class AtomData {
 	 * Returns the full name of the atom selected by setSymbol
 	 * @return The current atom's full name
 	 */
-	public String getName() {
+	public String getAtomName() {
 		return name;
 	}
 
@@ -274,7 +274,7 @@ public class AtomData {
 	 * Returns the count of the atom selected by setSymbol
 	 * @return The current atom's count
 	 */
-	public double getCount() {
+	public double getAtomCount() {
 		return count;
 	}
 
@@ -283,7 +283,7 @@ public class AtomData {
 	 * Returns the atomic weight of the atom selected by setSymbol
 	 * @return The current atom's atomic weight in gm/mol
 	 */
-	public double getWeight() {
+	public double getAtomWeight() {
 		return weight;
 	}
 
@@ -295,9 +295,9 @@ public class AtomData {
 	 * @return The requested atom's atomic weight in gm/mol, -1 if incorrect atom symbol
 	 */
 	public double getAtomWeight(String theAtom) {
-		if(setSymbol(theAtom))
+		if(setAtomSymbol(theAtom))
 		{
-			return getWeight();
+			return getAtomWeight();
 		}
 		else
 		{
@@ -314,7 +314,7 @@ public class AtomData {
 	 */
 	public int getAtomNum(String theAtom) {
 
-		int atmIndex = getSymbolIndex(theAtom);
+		int atmIndex = getAtomSymbolIndex(theAtom);
 		if(atmIndex < atomSymbol.length)
 		{
 			return atmIndex+1;
@@ -332,7 +332,7 @@ public class AtomData {
 	 * Returns the atomic number of the atom selected by setSymbol
 	 * @return The current atom's atomic number
 	 */
-	public int getNumber() {
+	public int getAtomNumber() {
 		return number;
 	}
 

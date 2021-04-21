@@ -37,7 +37,7 @@ public class FormulaList extends LookupNIST{
 		AtomData myAtomData = new AtomData();
 		for(int i=0;i<formula.length;i+=2)
 		{
-			if( myAtomData.setSymbol(formula[i]) == false)
+			if( myAtomData.setAtomSymbol(formula[i]) == false)
 			{
 				//System.out.println("Bad Formula");
 				return null;
@@ -66,9 +66,9 @@ public class FormulaList extends LookupNIST{
 			double count = Double.parseDouble(formula[i+1]);
 			String symbol = formula[i];			
 			AtomData myAtmDat = new AtomData();
-			if(myAtmDat.setSymbol(symbol))
+			if(myAtmDat.setAtomSymbol(symbol))
 			{
-				myAtmDat.setCount(count);
+				myAtmDat.setAtomCount(count);
 				myList.add(myAtmDat);
 			}
 		}

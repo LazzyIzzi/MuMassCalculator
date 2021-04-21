@@ -63,7 +63,7 @@ public class MuMassCalculator extends FormulaList{
 		{
 			for( AtomData fl : myFL)
 			{
-				formulaWt += fl.getWeight() * fl.getCount();
+				formulaWt += fl.getAtomWeight() * fl.getAtomCount();
 			}
 			return formulaWt;
 		}
@@ -98,8 +98,8 @@ public class MuMassCalculator extends FormulaList{
 			formulaWt = getFormulaWeight(theFormula);
 			for( AtomData atmData : myAtomData)
 			{
-				atomMuMass = getAtomMuMass(atmData.getSymbol(), theMeV, muMassType);
-				muMass += (atomMuMass * atmData.getWeight() * atmData.getCount())/ formulaWt;
+				atomMuMass = getAtomMuMass(atmData.getAtomSymbol(), theMeV, muMassType);
+				muMass += (atomMuMass * atmData.getAtomWeight() * atmData.getAtomCount())/ formulaWt;
 			}
 			return muMass;
 		}
@@ -170,7 +170,7 @@ public class MuMassCalculator extends FormulaList{
 			//get the total length of the atom mev arrays
 			for( AtomData atmData : myAtomData)
 			{
-				dumArr = getAtomMevArray(atmData.getSymbol());				
+				dumArr = getAtomMevArray(atmData.getAtomSymbol());				
 				formulaArrLen += dumArr.length;
 			}
 
@@ -182,7 +182,7 @@ public class MuMassCalculator extends FormulaList{
 			j=0;
 			for( AtomData atmData : myAtomData)
 			{
-				dumArr = getAtomMevArray(atmData.getSymbol());
+				dumArr = getAtomMevArray(atmData.getAtomSymbol());
 				for(i=0;i< dumArr.length;i++)
 				{
 					tempMevArray[j]= dumArr[i];
