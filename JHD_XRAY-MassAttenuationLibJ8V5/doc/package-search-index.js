@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"gray.AtomData"},{"l":"jhd.Formulas"},{"l":"jhd.MathTools"},{"l":"jhd.XrayAbsFuncs"},{"l":"nist.MuMassData"}];updateSearchResults();
