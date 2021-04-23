@@ -171,6 +171,10 @@ public class AtomData {
 	
 	//***********************************************************************
 
+	/**
+	 * @param theAtomSymbol e.g. AU for gold
+	 * @return the index of the atom in the atom symbol list
+	 */
 	protected int getAtomSymbolIndex(String theAtomSymbol)
 	{
 		int i, symbolIndex = -1;
