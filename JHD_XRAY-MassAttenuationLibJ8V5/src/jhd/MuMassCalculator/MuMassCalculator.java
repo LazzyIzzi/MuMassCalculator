@@ -135,6 +135,8 @@ public class MuMassCalculator extends FormulaList{
 		int minIndex, maxIndex;
 
 		double[] mevArr = getMevArray(theFormula);
+		if(mevArr == null) return null;
+		
 		for(minIndex = 0; minIndex < mevArr.length;minIndex++)
 		{
 			if(mevArr[minIndex] > minMev ) break;
