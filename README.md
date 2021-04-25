@@ -30,7 +30,7 @@ See: https://imagej.nih.gov/ij/
 
 A MuMassCalculator jar file, JavaDocs and sample ImageJ PlugIn are available at
 
-https://drive.google.com/drive/folders/1fshrESwC7-sY6RYjsfVgYdudNeBxM_L-?usp=sharing
+https://drive.google.com/drive/folders/1xr8dBjpwd2bo6ZqFmwoKvBBDUoqaK0Bg?usp=sharing
 
 MuMassCalc_J8Lib.jar contains the java source and class files.
 MuMassCalculatorDocs contains JavaDocs html files
