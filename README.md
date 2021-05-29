@@ -68,7 +68,7 @@ import jhd.MuMassCalculator.*;
 			System.out.println(mev);
 		}
 		
-		double mev = mmc.getAtomMuMass("AC", .1, "Totattn");
-		System.out.println(mev);
+		double theMuMass = mmc.getAtomMuMass("AC", .1, "Totattn");
+		System.out.println(theMuMass);
 	}
  
