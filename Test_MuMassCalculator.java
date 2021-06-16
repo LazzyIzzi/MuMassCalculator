@@ -1,5 +1,3 @@
-package TestPackage;
-
 import java.awt.*;
 import ij.*;
 import ij.plugin.*;
