@@ -19,7 +19,87 @@ import gray.AtomData.*;
 public class FormulaList extends LookupNIST{
 	
 	
+
 	//*********************************************************************************************************		
+	/**
+	 * @param formulaList
+	 * @param index the position in the formulalist
+	 * @return The atom name e.g. "chromium"
+	 */
+	public String getAtomName(ArrayList<AtomData> formulaList,int index)
+	{
+		if(index > formulaList.size()) return null;
+		else
+		{
+			AtomData atomData = formulaList.get(index);
+			return atomData.getAtomName();
+		}
+	}
+
+	//*********************************************************************************************************		
+	/**
+	 * @param formulaList
+	 * @param index the position in the formulalist
+	 * @return The atom name e.g. "CR" for chromium
+	 */
+	public String getAtomSymbol(ArrayList<AtomData> formulaList,int index)
+	{
+		if(index > formulaList.size()) return null;
+		else
+		{
+			AtomData atomData = formulaList.get(index);
+			return atomData.getAtomSymbol();
+		}
+	}
+	
+	//*********************************************************************************************************		
+	/**
+	 * @param formulaList
+	 * @param index the position in the formulalist
+	 * @return The count  for the atom at the formula list index 
+	 */
+	public double getAtomCount(ArrayList<AtomData> formulaList,int index)
+	{
+		if(index > formulaList.size()) return 0;
+		else
+		{
+			AtomData atomData = formulaList.get(index);
+			return atomData.getAtomCount();
+		}
+	}
+
+	//*********************************************************************************************************		
+	/**
+	 * @param formulaList
+	 * @param index the position in the formulalist
+	 * @return The atomic weight in gm/mol for the atom at the formula list index 
+	 */
+	public double getAtomWeight(ArrayList<AtomData> formulaList,int index)
+	{
+		if(index > formulaList.size()) return 0;
+		else
+		{
+			AtomData atomData = formulaList.get(index);
+			return atomData.getAtomWeight();
+		}
+	}
+	
+	//*********************************************************************************************************		
+		/**
+		 * @param formulaList
+		 * @param index the position in the formulalist
+		 * @return Z, the atomic number for the atom at the formula list index 
+		 */
+		public int getAtomNumber(ArrayList<AtomData> formulaList,int index)
+		{
+			if(index > formulaList.size()) return 0;
+			else
+			{
+				AtomData atomData = formulaList.get(index);
+				return atomData.getAtomNumber();
+			}
+		}
+
 
 	/**
 	 * Returns an ArrayList of AtomData Objects.
