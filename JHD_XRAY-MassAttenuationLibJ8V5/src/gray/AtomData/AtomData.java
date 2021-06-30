@@ -167,6 +167,7 @@ public class AtomData {
 	private String symbol,name;
 	private double weight;
 	private double count;
+	private double density;
 	private int number;
 	
 	//***********************************************************************
@@ -203,6 +204,7 @@ public class AtomData {
 			this.symbol = symbol;
 			this.name = atomName[i];
 			this.weight = atomGmPerMol[i];
+			this.density = atomGmPerCC[i];
 			this.number = i+1; 
 			return true;
 		}
@@ -292,6 +294,15 @@ public class AtomData {
 	}
 
 	//***********************************************************************
+	/**
+	 * Returns the atomic weight of the atom selected by setSymbol
+	 * @return The current atom's atomic weight in gm/mol
+	 */
+	public double getAtomDensity() {
+		return density;
+	}
+	
+	//***********************************************************************
 
 	/**
 	 * Returns the atomic weight of theAtom
@@ -309,6 +320,23 @@ public class AtomData {
 		}
 	}
 	
+	//***********************************************************************
+
+	/**
+	 * Returns the atomic weight of theAtom
+	 * @param theAtom The symbol for the atom, e.g. "AU" for gold
+	 * @return The requested atom's density in gm/cc, -1 if incorrect atom symbol
+	 */
+	public double getAtomGmPerCC(String theAtom) {
+		if(setAtomSymbol(theAtom))
+		{
+			return getAtomDensity();
+		}
+		else
+		{
+			return -1;	
+		}
+	}
 	//***********************************************************************
 	
 	/**

@@ -17,8 +17,8 @@ import gray.AtomData.*;
  * @author John H Dunsmuir
  */
 public class FormulaList extends LookupNIST{
-	
-	
+
+
 
 	//*********************************************************************************************************		
 	/**
@@ -51,7 +51,7 @@ public class FormulaList extends LookupNIST{
 			return atomData.getAtomSymbol();
 		}
 	}
-	
+
 	//*********************************************************************************************************		
 	/**
 	 * @param formulaList
@@ -83,24 +83,42 @@ public class FormulaList extends LookupNIST{
 			return atomData.getAtomWeight();
 		}
 	}
-	
+
 	//*********************************************************************************************************		
-		/**
-		 * @param formulaList
-		 * @param index the position in the formulalist
-		 * @return Z, the atomic number for the atom at the formula list index 
-		 */
-		public int getAtomNumber(ArrayList<AtomData> formulaList,int index)
+	/**
+	 * @param formulaList
+	 * @param index the position in the formulalist
+	 * @return Z, the atomic number for the atom at the formula list index 
+	 */
+	public int getAtomNumber(ArrayList<AtomData> formulaList,int index)
+	{
+		if(index > formulaList.size()) return 0;
+		else
 		{
-			if(index > formulaList.size()) return 0;
-			else
-			{
-				AtomData atomData = formulaList.get(index);
-				return atomData.getAtomNumber();
-			}
+			AtomData atomData = formulaList.get(index);
+			return atomData.getAtomNumber();
 		}
+	}
 
+	//*********************************************************************************************************
+	
+	/**
+	 * @param formulaList
+	 * @param index the position in the formulalist
+	 * @return the density in gm/cc for the atom at the formula list index 
+	 */
+	public double getAtomDensity(ArrayList<AtomData> formulaList,int index)
+	{
+		if(index > formulaList.size()) return 0;
+		else
+		{
+			AtomData atomData = formulaList.get(index);
+			return atomData.getAtomDensity();
+		}
+	}
 
+	//*********************************************************************************************************
+	
 	/**
 	 * Returns an ArrayList of AtomData Objects.
 	 * @param theFormula A string representation of a chemical formula e.g. Ca:1:C:1:O:3 for CaCO3 
@@ -108,11 +126,11 @@ public class FormulaList extends LookupNIST{
 	 */
 	public ArrayList<AtomData> createFormulaList(String theFormula)
 	{
-		
+
 		if(theFormula.length()<=2) theFormula += ":1";
-			
+
 		String[] formula = theFormula.split(":");
-		
+
 		//the odd items must be strings on the atom list
 		AtomData myAtomData = new AtomData();
 		for(int i=0;i<formula.length;i+=2)
@@ -123,7 +141,7 @@ public class FormulaList extends LookupNIST{
 				return null;
 			}	
 		}
-		
+
 		//the even "Count" items must be positive numbers
 		try{
 			for(int i=0;i<formula.length;i+=2)
@@ -136,9 +154,9 @@ public class FormulaList extends LookupNIST{
 			}
 		}
 		catch(Exception e){				//System.out.println("Bad Formula");
-				return null;
+			return null;
 		}
-		
+
 		// everthing is OK
 		ArrayList<AtomData> myList = new ArrayList<AtomData>();
 		for(int i=0;i<formula.length;i+=2)
