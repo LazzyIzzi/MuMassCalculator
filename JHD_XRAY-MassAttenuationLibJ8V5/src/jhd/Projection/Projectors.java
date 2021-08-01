@@ -28,7 +28,7 @@ public class Projectors
 	//*******************************************************************************
 
 	/**
-	 * @param Reference to an NxN (square) floating point image
+	 * @param image Reference to an NxN (square) floating point image
 	 * @param width The image width
 	 * @param height The image height
 	 * @param numAngles The number of projections between 0 and 180 degrees rotation
@@ -93,11 +93,11 @@ public class Projectors
 	//*******************************************************************************
 
 	/**
-	 * @param Reference to an NxN (square) floating point image
+	 * @param image Reference to an NxN (square) floating point image
 	 * @param width The image width in pixels
 	 * @param height The image height in pixels
 	 * @param srcToDet The source to detector distance in pixels
-	 * @param A positive number for the fan projection magnification. In the real world always greater than 1
+	 * @param magnification A positive number for the fan projection magnification. In the real world always greater than 1
 	 * @param numAngles The number of projections between 0 and 360 degrees rotation
 	 * @return Reference to a floating point sinogram dimensions width x numAngles
 	 */
@@ -132,7 +132,7 @@ public class Projectors
 		double overSample = 1;
 		
 		double ang;
-		for(ang=0.0,sinoRow=0;ang<360.0;ang+=angInc,sinoRow++)
+		for(ang=0.0,sinoRow=0;sinoRow<numAngles;ang+=angInc,sinoRow++)
 		{
 			double theta	= Math.toRadians(ang);
 			double sinTheta	= Math.sin(theta);

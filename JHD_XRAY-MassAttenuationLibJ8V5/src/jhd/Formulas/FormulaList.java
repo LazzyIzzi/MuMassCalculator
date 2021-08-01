@@ -22,7 +22,7 @@ public class FormulaList extends LookupNIST{
 
 	//*********************************************************************************************************		
 	/**
-	 * @param formulaList
+	 * @param formulaList A list containing atom data. See createFormulaList
 	 * @param index the position in the formulalist
 	 * @return The atom name e.g. "chromium"
 	 */
@@ -38,7 +38,7 @@ public class FormulaList extends LookupNIST{
 
 	//*********************************************************************************************************		
 	/**
-	 * @param formulaList
+	 * @param formulaList A list containing atom data. See createFormulaList
 	 * @param index the position in the formulalist
 	 * @return The atom name e.g. "CR" for chromium
 	 */
@@ -54,7 +54,7 @@ public class FormulaList extends LookupNIST{
 
 	//*********************************************************************************************************		
 	/**
-	 * @param formulaList
+	 * @param formulaList A list containing atom data. See createFormulaList
 	 * @param index the position in the formulalist
 	 * @return The count  for the atom at the formula list index 
 	 */
@@ -70,7 +70,7 @@ public class FormulaList extends LookupNIST{
 
 	//*********************************************************************************************************		
 	/**
-	 * @param formulaList
+	 * @param formulaList A list containing atom data. See createFormulaList
 	 * @param index the position in the formulalist
 	 * @return The atomic weight in gm/mol for the atom at the formula list index 
 	 */
@@ -86,7 +86,7 @@ public class FormulaList extends LookupNIST{
 
 	//*********************************************************************************************************		
 	/**
-	 * @param formulaList
+	 * @param formulaList A list containing atom data. See createFormulaList
 	 * @param index the position in the formulalist
 	 * @return Z, the atomic number for the atom at the formula list index 
 	 */
@@ -103,7 +103,7 @@ public class FormulaList extends LookupNIST{
 	//*********************************************************************************************************
 	
 	/**
-	 * @param formulaList
+	 * @param formulaList A list containing atom data. See createFormulaList
 	 * @param index the position in the formulalist
 	 * @return the density in gm/cc for the atom at the formula list index 
 	 */
