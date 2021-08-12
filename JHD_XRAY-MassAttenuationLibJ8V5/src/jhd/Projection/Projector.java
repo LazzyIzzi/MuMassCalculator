@@ -31,15 +31,15 @@ public class Projector
 		double x;
 		double y;		
 	}
-	
+
 	//*******************************************************************************
 
 	// There are too many parameters to pass on an argument list
 	/**Arguments to Bremsstrahlung projectors are passed as a parameter block
 	 * @author John
 	 */
-	
-		public class CtSettings
+
+	public class CtSettings
 	{
 		//X-ray Source
 		/**The X-ray source target material*/
@@ -76,6 +76,10 @@ public class Projector
 		public int numAng;
 		/**Set to true to pad a image that has data in the corners with zeros so that the corners will be properly projected at all angles.*/
 		public boolean padImage;
+		/**The magnification for Fan Beam CT, ignored by parallel beam functions*/
+		public float magnification;
+		/**The source to detector distance in pixels for Fan Beam CT, ignored by parallel beam functions*/
+		public float srcToDet;
 
 		//Detector
 		/**The detector scintillator  formula, Must be in Atom1:Count1:Atom2:Count2... format, e.g. Cs:1:I:1 for CsI Cesium Iodide*/
@@ -87,17 +91,17 @@ public class Projector
 		/**Multiply floating point opacities by 6000 and convert result to 16-bit*/
 		public boolean scale16;
 	}
-	
+
 	//*******************************************************************************
 
-	/**Creates a sinogram of a tagged image using a filtered bremsstrahlung X-ray source, parallel projection, and scintillation detector.
-	 * @param ctSet A CtSettings Parameter block, see nested classes.
+	/**
+	 * @param ctSet A CtSettings Parameter block
 	 * @param image A 1D reference to a float image
 	 * @param width The image width
 	 * @param height The image height
 	 * @return A 1D reference to a sinogram width*numViews
 	 */
-	public float[] imageToBremsstrahlungParallelSinogram(CtSettings ctSet, float[] image, int width, int height)
+	public float[] imageToBremsstrahlungFanBeamSinogram(CtSettings ctSet, float[] image, int width, int height)
 	{
 
 		//Set up the progress bar
@@ -122,7 +126,7 @@ public class Projector
 		//Buffer to hold a sinogram of the detected counts at one energy
 		float[] sino = null;
 		//buffer to sum the individual energy sinograms
-        float[] bremSino = new float[width*ctSet.numAng];
+        float[] bremSino = new float[(int)(width*ctSet.numAng*ctSet.magnification)];
 
         //Swap min and max kv if necessary
 		if(ctSet.minKV > ctSet.kv)
@@ -132,20 +136,22 @@ public class Projector
 			ctSet.kv = temp;
 		}
 		
-		double kvInc = (ctSet.kv-ctSet.minKV)/ctSet.nBins;		
+		double kvInc = (ctSet.kv-ctSet.minKV)/ctSet.nBins;
+		
+		
 		int numKev = ctSet.nBins +1;
-				
+		
+		
 		//The Scanner absorbances
 		double filterTau;
 		double detTau;
 				
-		//The Spectra, Some currently unnecessary spectra commented out
 		//The source
 		double src;  //The source intensity (counts)
 		double srcFilt; //The source counts after filtration
 		double srcFiltDet; //The filtered source  detected counts
 
-		//Integration holds all of the filtered source detected counts 
+		//srcFiltDetIntg holds all of the filtered source detected counts 
 		double srcFiltDetIntg=0;
 
 		int i=0;
@@ -163,14 +169,13 @@ public class Projector
             //The detector attenuation
             detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
  
-    		//Get the source properties
-			//Counts
+    		//Get the source Counts			//Counts
 			src = mmc.spectrumKramers(ctSet.kv, ctSet.ma, ctSet.target, meV);//get the source continuum intensity spectrum			
 			//Filtered Counts
             srcFilt = src * Math.exp(-filterTau);           
             //Detected Counts without sample
             srcFiltDet = srcFilt * (1 - Math.exp(-detTau));
-            //Sum the Counts
+            //Sum the Counts, no, we don't multiply by dE=kvInc because it will cancel out later
             srcFiltDetIntg+=srcFiltDet;
                         
             //Make a copy of the tagged-segmented image
@@ -180,7 +185,6 @@ public class Projector
             double[] muLin = new double[ctSet.ctMaterialCount];
             for(int k =0;k<ctSet.ctMaterialCount;k++)
             {
-               // muLin[k] = mmc.getMuMass(ctSet.ctMaterials[k].formula, meV, "TotAttn") * ctSet.ctMaterials[k].gmPerCC;        	
                 muLin[k] = mmc.getMuMass(ctSet.formula[k], meV, "TotAttn") * ctSet.gmPerCC[k];        	
             }
             
@@ -197,19 +201,13 @@ public class Projector
             }
             
             //Create the sinogram projection of the material linear attenuations 
-            sino = prj.imageToParallelSinogram(muLinImage, width, height, ctSet.numAng);
+             sino = prj.imageToFanBeamSinogram(muLinImage, width, height, ctSet.srcToDet, ctSet.magnification, ctSet.numAng);
+            
+            //Sum The sinogram as counts
+            double detCaptured = (1 - Math.exp(-detTau));
             for(int j=0;j<sino.length;j++)
             {
-            	//float temp = sino[j];
-                //convert from pixel-1 to cm-1
-            	//temp *= ctSet.pixSizeCM;
-                //The source attenuated by the filter and the sample
-            	//temp = (float)(srcFilt * Math.exp(-temp));
-                //The source attenuated by the filter and the sample detected counts
-            	//temp = (float)(temp * (1 - Math.exp(-detTau)));
-            	
-            	//Add up the detected counts, same as commented temp above but harder to read
-            	bremSino[j] += ((srcFilt * Math.exp(-sino[j] *ctSet.pixSizeCM)) * (1 - Math.exp(-detTau)));   
+            	bremSino[j] += ((srcFilt * Math.exp(-sino[j] *ctSet.pixSizeCM)) * detCaptured);   
             }
  		}
 		
@@ -219,6 +217,140 @@ public class Projector
 		return bremSino;
 	}
 	
+	//*******************************************************************************
+
+	/**Creates a sinogram of a tagged image using a filtered bremsstrahlung X-ray source, parallel projection, and scintillation detector.
+	 * @param ctSet A CtSettings Parameter block, see nested classes.
+	 * @param image A 1D reference to a float image
+	 * @param width The image width
+	 * @param height The image height
+	 * @return A 1D reference to a sinogram width*numViews
+	 */
+	public float[] imageToBremsstrahlungParallelSinogram(CtSettings ctSet, float[] image, int width, int height)
+	{
+
+		//Set up the progress bar
+		JPanel fldPanel = new JPanel();
+		JFrame frame = new JFrame("CT Scan Progress");		
+		JProgressBar prgBar = new JProgressBar(0,ctSet.nBins+1);
+
+		frame.setSize(400, 100);
+		frame.setLocationRelativeTo(null);
+
+		prgBar.setPreferredSize(new Dimension(350, 50));
+		prgBar.setValue(0);
+		prgBar.setStringPainted(true);			
+		fldPanel.add(prgBar);
+
+		frame.add(fldPanel);
+		frame.setVisible(true);
+
+		MuMassCalculator mmc = new MuMassCalculator();
+		Projector prj = new Projector();
+
+		//Buffer to hold a sinogram of the detected counts at one energy
+		float[] sino = null;
+		//buffer to sum the individual energy sinograms
+		float[] bremSino = new float[width*ctSet.numAng];
+
+		//Swap min and max kv if necessary
+		if(ctSet.minKV > ctSet.kv)
+		{
+			double temp = ctSet.minKV;
+			ctSet.minKV = ctSet.kv;
+			ctSet.kv = temp;
+		}
+
+		double kvInc = (ctSet.kv-ctSet.minKV)/ctSet.nBins;		
+		int numKev = ctSet.nBins +1;
+
+		//The Scanner absorbances
+		double filterTau;
+		double detTau;
+
+		//The Spectra, Some currently unnecessary spectra commented out
+		//The source
+		double src;  //The source intensity (counts)
+		double srcFilt; //The source counts after filtration
+		double srcFiltDet; //The filtered source  detected counts
+
+		//Integration holds all of the filtered source detected counts 
+		double srcFiltDetIntg=0;
+
+		int i=0;
+		double keV;
+		float[] muLinImage=null;
+		for(i=0, keV = ctSet.kv; i<numKev; i++, keV-= kvInc)
+		{			
+			prgBar.setValue(i);
+
+			//The Source energy
+			double meV = keV / 1000;
+
+			//The filter attenuation
+			filterTau = mmc.getMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
+			//The detector attenuation
+			detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
+
+			//Get the source properties
+			//Counts
+			src = mmc.spectrumKramers(ctSet.kv, ctSet.ma, ctSet.target, meV);//get the source continuum intensity spectrum			
+			//Filtered Counts
+			srcFilt = src * Math.exp(-filterTau);           
+			//Detected Counts without sample
+			srcFiltDet = srcFilt * (1 - Math.exp(-detTau));
+			//Sum the Counts
+			srcFiltDetIntg+=srcFiltDet;
+
+			//Make a copy of the tagged-segmented image
+			muLinImage = image.clone();
+
+			// get the attenuation of the materials
+			double[] muLin = new double[ctSet.ctMaterialCount];
+			for(int k =0;k<ctSet.ctMaterialCount;k++)
+			{
+				// muLin[k] = mmc.getMuMass(ctSet.ctMaterials[k].formula, meV, "TotAttn") * ctSet.ctMaterials[k].gmPerCC;        	
+				muLin[k] = mmc.getMuMass(ctSet.formula[k], meV, "TotAttn") * ctSet.gmPerCC[k];        	
+			}
+
+			// convert tags to attenuation
+			for(int j=0;j<muLinImage.length;j++)
+			{
+				for(int tag=1;tag<=ctSet.ctMaterialCount;tag++)
+				{
+					if((int)muLinImage[j] == tag)
+					{
+						muLinImage[j] = (float)muLin[tag-1];
+					}
+				}
+			}
+
+			//Create the sinogram projection of the material linear attenuations 
+			sino = prj.imageToParallelSinogram(muLinImage, width, height, ctSet.numAng);
+
+			//pull the Math.exp call out of the loop
+			double detCapture = (1 - Math.exp(-detTau));
+			for(int j=0;j<sino.length;j++)
+			{
+				//float temp = sino[j];
+				//convert from pixel-1 to cm-1
+				//temp *= ctSet.pixSizeCM;
+				//The source attenuated by the filter and the sample
+				//temp = (float)(srcFilt * Math.exp(-temp));
+				//The source attenuated by the filter and the sample detected counts
+				//temp = (float)(temp * (1 - Math.exp(-detTau)));
+
+				//Add up the detected counts, same as commented temp above but harder to read
+				//bremSino[j] += ((srcFilt * Math.exp(-sino[j] *ctSet.pixSizeCM)) * (1 - Math.exp(-detTau)));   
+				bremSino[j] += ((srcFilt * Math.exp(-sino[j] *ctSet.pixSizeCM)) * detCapture);   
+			}
+		}
+
+		//Convert the accumulated detected counts to tau
+		for(int j=0;j<bremSino.length;j++) bremSino[j] = (float)(Math.log(srcFiltDetIntg/bremSino[j]));
+		frame.dispose();
+		return bremSino;
+	}
 
 	//*******************************************************************************
 
@@ -240,35 +372,38 @@ public class Projector
 		int sinoRows = numAngles;
 		double angInc = 180.0/(double)numAngles;
 		int i,sinoRow;
-		
-			
+
+
 		// initialize the source and detector arrays.
 		DblPoint[] srcPix = new DblPoint[width];
 		DblPoint[] detPix = new DblPoint[width];
 		//float[][] detPixIntg = new float[width][sinoRows];
 		float[] lineIntegrals = new float[width*sinoRows];
-		
+
 		//offset coordinate system to center of image
 		for(i=0;i<width;i++)
 		{
 			srcPix[i] = new DblPoint(i-width2,0-height2);
 			detPix[i] = new DblPoint(i-width2,height-height2);
 		}		
-		
+
 		//Do the projection
 		DblPoint srcPt = new DblPoint();
 		DblPoint detPt = new DblPoint();
-		
+
 		//over-sampling caused negligible improvement to resulting reconstructions
 		double overSample = 1;
-		
+
 		double ang;
+		//Pre-computing  sine and cosine tables before calling
+		//imageToParallelSinogram is about 10% slower than re-computing
+		//them for each energy
 		for(sinoRow=0,ang=0;sinoRow<sinoRows; sinoRow++,ang+=angInc)
 		{
 			double theta	= Math.toRadians(ang);
 			double sinTheta	= Math.sin(theta);
 			double cosTheta	= Math.cos(theta);
-			
+
 			for(i=0;i<width;i++)
 			{			
 				//get the source and detector locations pixel coordinates
@@ -276,7 +411,7 @@ public class Projector
 				srcPt.y = (srcPix[i].x*sinTheta+srcPix[i].y*cosTheta+height2);
 				detPt.x = (detPix[i].x*cosTheta-detPix[i].y*sinTheta+width2);
 				detPt.y = (detPix[i].x*sinTheta+detPix[i].y*cosTheta+height2);
-				
+
 				//Get the line sum				
 				float raySum = getRaySum(image,width,height, srcPt, detPt, overSample);
 				lineIntegrals[i + sinoRow*width] = raySum;
@@ -284,7 +419,7 @@ public class Projector
 		}		
 		return lineIntegrals;
 	}
-	
+
 	//*******************************************************************************
 
 	/**Creates a sinogram from an image using Fan Beam projection
@@ -297,58 +432,58 @@ public class Projector
 	 * @return Reference to a floating point sinogram dimensions width x numAngles
 	 */
 	public float[] imageToFanBeamSinogram(float[] image,int width,int height, 
-							float srcToDet, float magnification, int numAngles)	
+			float srcToDet, float magnification, int numAngles)	
 	{
 		//Function always scans 180 degrees
 		//Rotating the image works poorly, bad edge interpolation.
 		//This code moves the source and detector locations
 		//with sub pixel accuracy and interpolates along ray paths
-		
+
 		int rotXo = width/2;
 		int rotYo = height/2;
-		
+
 		float srcToSamp = srcToDet/magnification;
 		float sampToDet =srcToDet - srcToSamp;
-		
-		int detWidthPix = (int) (width*magnification);		//IJ.log("detWidth=" + detWidthPix );
+
+		int detWidthPix = (int) (width*magnification);
 		float start = -detWidthPix/2;
-		
+
 		int sinoRows = numAngles;
 		double angInc = 360.0/(double)numAngles;
 		int sinoCol,sinoRow;
-			
+
 		//Do the projection
 		DblPoint srcPt = new DblPoint();
 		DblPoint detPt = new DblPoint();
 		float[] lineIntegrals = new float[detWidthPix*sinoRows];
 		float detPix;
-		
+
 		//over-sampling caused negligible improvement to resulting reconstructions
 		double overSample = 1;
-		
+
 		double ang;
 		for(ang=0.0,sinoRow=0;sinoRow<numAngles;ang+=angInc,sinoRow++)
 		{
 			double theta	= Math.toRadians(ang);
 			double sinTheta	= Math.sin(theta);
 			double cosTheta	= Math.cos(theta);
-			
+
 			//get the source pixel coordinates
 			srcPt.x = (rotXo + srcToSamp*sinTheta);
 			srcPt.y = (rotYo -srcToSamp*cosTheta);
-						
+
 			for(detPix=start,sinoCol=0;sinoCol<detWidthPix;detPix+=1,sinoCol++)
 			{			
 				//get the detector pixel coordinates
 				detPt.x = (float)(detPix*cosTheta-sampToDet*sinTheta+rotXo);
 				detPt.y = (float)(sampToDet*cosTheta+detPix*sinTheta+rotYo);
-				
+
 				// I tried to shorten the source to detector lines but the math was slower
 				// than summing all of the zero pixels outside of the sample.
 				// I need a clever trick.
 				// For very long source to detector distances with small samples
 				// consider using imageToParallelelSinogram.
-				
+
 				//Get the line sum				
 				float raySum = getRaySum(image,width,height, srcPt, detPt, overSample);;
 				lineIntegrals[sinoCol + sinoRow*detWidthPix] = raySum;
@@ -369,20 +504,20 @@ public class Projector
 	 * @return The value of the line integral along the ray 
 	 */
 	private static float getRaySum(float[] image, int width, int height,
-									DblPoint p1, DblPoint p2, double overSample)
+			DblPoint p1, DblPoint p2, double overSample)
 	{
 		float raySum = 0;
-		
+
 		int numPts;
 		double xLen = p2.x - p1.x;
 		double yLen = p2.y - p1.y;
-		
+
 		//The number of samples;
 		numPts = (int)Math.round(Math.sqrt(xLen*xLen +  yLen*yLen));
 		numPts*=overSample;
 		double xInc = numPts>0?xLen/numPts:0;
 		double yInc = numPts>0?yLen/numPts:0;
-			
+
 		int xLeft,yTop;
 		float topLeft=0,topRight=0,btmLeft=0,btmRight=0;
 		double top,btm;
@@ -391,7 +526,7 @@ public class Projector
 		{
 			xLeft = (int) x;
 			yTop = (int) y;
-			
+
 			if(x>=0 && x+1 < width && y>=0 && y+1 <height)
 			{
 				topLeft = image[xLeft + yTop*width];
