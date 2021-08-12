@@ -66,9 +66,9 @@ public class Projector
 
 		/**The number of discrete compounds in the image*/
 		public int	ctMaterialCount;
-		/**The compound formula. Must be in Atom1:Count1:Atom2:Count2... format, e.g. Ca:1:C:1:O:3 for CaCO3 calcite*/
+		/**Array of compound formulas. Must be in Atom1:Count1:Atom2:Count2 format, for example Ca:1:C:1:O:3 for CaCO3 Calcite*/
 		public String[] formula;
-		/**The compound density in gm/cc*/
+		/**Array of compound densities in gm/cc*/
 		public double[] gmPerCC;
 
 		//CT params
@@ -82,19 +82,19 @@ public class Projector
 		public float srcToDet;
 
 		//Detector
-		/**The detector scintillator  formula, Must be in Atom1:Count1:Atom2:Count2... format, e.g. Cs:1:I:1 for CsI Cesium Iodide*/
+		/**The detector scintillator  formula, Must be in Atom1:Count1:Atom2:Count2 format, For example Cs:1:I:1 for CsI Cesium Iodide*/
 		public String detFormula;
-		/**The detector scintillator screen or element thickness in CM*/
+		/**The detector scintillator screen or detector element thickness in CM*/
 		public double detCM;
-		/**The detector scintillator screen/element density in gm/cc*/
+		/**The detector scintillator screen or detector element density in gm/cc*/
 		public double detGmPerCC;		
-		/**Multiply floating point opacities by 6000 and convert result to 16-bit*/
+		/**Set to true to multiply sinogram floating point opacities by 6000 and convert result to 16-bit*/
 		public boolean scale16;
 	}
 
 	//*******************************************************************************
 
-	/**
+	/**Creates a fan beam sinogram of a tagged image using a filtered bremsstrahlung X-ray source, parallel projection, and scintillation detector.
 	 * @param ctSet A CtSettings Parameter block
 	 * @param image A 1D reference to a float image
 	 * @param width The image width
@@ -219,7 +219,7 @@ public class Projector
 	
 	//*******************************************************************************
 
-	/**Creates a sinogram of a tagged image using a filtered bremsstrahlung X-ray source, parallel projection, and scintillation detector.
+	/**Creates a parallel beam sinogram of a tagged image using a filtered bremsstrahlung X-ray source, parallel projection, and scintillation detector.
 	 * @param ctSet A CtSettings Parameter block, see nested classes.
 	 * @param image A 1D reference to a float image
 	 * @param width The image width

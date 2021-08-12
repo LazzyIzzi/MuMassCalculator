@@ -1,3 +1,4 @@
+
 package gray.AtomData;
 
 /*
@@ -13,8 +14,7 @@ package gray.AtomData;
  *  
  */
 
-/**
- * A class for retrieving data about an atom in a formula. Reference "The Elements", Theodore Gray, Black Dog and Leventhal, 2007 ISBN-13:978-1-60376-213-7
+/**A class for retrieving data about an atom in a formula, Reference "The Elements", Theodore Gray, Black Dog and Leventhal, 2007 ISBN-13:978-1-60376-213-7
  * @author John H Dunsmuir
  */
 public class AtomData {
