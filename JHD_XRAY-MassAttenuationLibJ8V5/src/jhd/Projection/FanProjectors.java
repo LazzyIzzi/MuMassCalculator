@@ -215,7 +215,7 @@ public class FanProjectors
 			}
 
 			//Create the sinogram projection of the material linear attenuation
-			sino = imageToFanBeamSinogram(muLinImage, width, height, (float)ctSet.pixSizeCM, ctSet.srcToDetCM, ctSet.magnification, ctSet.numAng);
+			sino = imageToFanBeamSinogram(muLinImage, width, height, (float)ctSet.pixSizeCM, ctSet.srcToDetCM, ctSet.magnification, ctSet.numAng,false);
 
 			//Sum The sinogram as counts
 			double detCaptured = (1 - Math.exp(-detTau));
@@ -238,12 +238,12 @@ public class FanProjectors
 	 * @param width The image width in pixels
 	 * @param height The image height in pixels
 	 * @param fanSettings A FanParam parameter list
-	 * @return a sinogram of the input iamge
+	 * @return a sinogram of the input image
 	 */
-	public float[] imageToFanBeamSinogram(float[] image,int width,int height, FanParams fanSettings)
+	public float[] imageToFanBeamSinogram(float[] image,int width,int height, FanParams fanSettings, boolean showProgress)
 	{
 		return imageToFanBeamSinogram(image,width,height, (float)fanSettings.pixSizeCM,
-				fanSettings.srcToDetCM, fanSettings.magnification, fanSettings.numAng);
+				fanSettings.srcToDetCM, fanSettings.magnification, fanSettings.numAng, showProgress);
 	}
 
 	//*******************************************************************************
@@ -256,15 +256,20 @@ public class FanProjectors
 	 * @param srcToDetCM The source to detector distance in pixels
 	 * @param magnification A positive number for the fan projection magnification. In the real world always greater than 1
 	 * @param numAngles The number of projections between 0 and 360 degrees rotation
+	 * @param showProgress Display a progress bar
 	 * @return Reference to a floating point sinogram dimensions (width x magnification) x numAngles
 	 */
-	public float[] imageToFanBeamSinogram(float[] image,int width,int height, float pixSizeCM,
-			float srcToDetCM, float magnification, int numAngles)	
+	protected  float[] imageToFanBeamSinogram(float[] image,int width,int height, float pixSizeCM,
+			float srcToDetCM, float magnification, int numAngles, boolean showProgress)	
 	{
+		JProgressBar prgBar = null;
+		JFrame frame = null;
+		if(showProgress)
+		{
 		//Set up the progress bar
 		JPanel fldPanel = new JPanel();
-		JFrame frame = new JFrame("CT Scan Progress");		
-		JProgressBar prgBar = new JProgressBar(0,numAngles);
+		frame = new JFrame("CT Scan Progress");		
+		prgBar = new JProgressBar(0,numAngles);
 
 		frame.setSize(400, 100);
 		frame.setLocationRelativeTo(null);
@@ -276,6 +281,150 @@ public class FanProjectors
 
 		frame.add(fldPanel);
 		frame.setVisible(true);
+		}
+		//Function always scans 360 degrees
+		//Rotating the image works poorly due to interpolation at material boundaries and
+		//the continued need for interpolation along ray paths.
+		//This code leaves the image stationary and rotates the source and detector locations
+		//around the center of the image with sub pixel accuracy. The projector then interpolates along ray paths
+		//By rotating the source and detector the number of interpolations is reduced by half
+
+		int width2 = width/2;
+		int height2 = height/2;
+
+		float srcToDetPix = srcToDetCM/(pixSizeCM*magnification);
+		float srcToSampPix = srcToDetPix/magnification;
+		//float sampToDetPix =srcToDetPix - srcToSampPix;
+
+		int detWidthPix = (int) (width*magnification);
+		int detR = (int)(detWidthPix/2);
+
+		//Equation of right side ray
+		float m=(srcToDetPix-srcToSampPix)/(detR-width/2);
+		float b = -srcToSampPix;
+
+		//The positions of the virtual source and detector
+		//Apply offsets to move the rotation origin to the
+		//center of the image
+		float srcPosY = -width2;
+		float detPosY = height2;
+		float srcPosX =(srcPosY - b)/m;
+		float detPosX = (detPosY - b)/m;
+		
+		//The distance increments between points
+		float srcInc = (2*srcPosX)/detWidthPix;
+		float detInc = (2*detPosX)/detWidthPix;
+		
+		//Arrays to hold the source and detector positions.
+		//the source and detector must have the same number of pixels
+		//One detector point for each source point 
+		DblPoint[] srcPix = new DblPoint[detWidthPix];
+		DblPoint[] detPix = new DblPoint[detWidthPix];
+		
+		//initialize the source and detector position arrays.
+		int i;
+		float pos;
+		for(i=0,pos = -srcPosX ;i<detWidthPix; i++, pos+=srcInc)
+		{
+			srcPix[i] = new DblPoint(pos,srcPosY);
+		}
+		for(i=0,pos = -detPosX ;i<detWidthPix; i++, pos+=detInc)
+		{
+			detPix[i] = new DblPoint(pos,detPosY);
+		}
+		
+		//float start = -detWidthPix/2;
+
+		int sinoRows = numAngles;
+		float[] lineIntegrals = new float[detWidthPix*sinoRows];
+		double ang, angInc = 360.0/(double)numAngles;
+		int sinoRow;
+
+		DblPoint srcPt = new DblPoint();
+		DblPoint detPt = new DblPoint();
+
+		//over-sampling caused negligible improvement to resulting reconstructions
+		double overSample = 1;
+
+		for(sinoRow=0,ang=0;sinoRow<sinoRows; sinoRow++,ang+=angInc)
+		{
+			double theta	= Math.toRadians(ang);
+			double sinTheta	= Math.sin(theta);
+			double cosTheta	= Math.cos(theta);
+
+			//for(i=0;i<width;i++)
+			for(i=0;i<detWidthPix;i++)
+			{			
+				//get the source and detector locations pixel coordinates
+				srcPt.x = (srcPix[i].x*cosTheta-srcPix[i].y*sinTheta+width2);
+				srcPt.y = (srcPix[i].x*sinTheta+srcPix[i].y*cosTheta+height2);
+				detPt.x = (detPix[i].x*cosTheta-detPix[i].y*sinTheta+width2);
+				detPt.y = (detPix[i].x*sinTheta+detPix[i].y*cosTheta+height2);
+
+				//Get the line sum				
+				float raySum = getRaySum((float[])image,width,height, srcPt, detPt, overSample);
+				lineIntegrals[i + sinoRow*detWidthPix] = raySum;
+			}
+		}
+		
+		if(showProgress)frame.dispose();
+		return lineIntegrals;
+	}
+
+
+	//*******************************************************************************
+	
+	/**Wrapper method for the full path method that accepts the parameter block instead of arguments.
+	 * @param image Reference to an NxN (square) floating point image
+	 * @param width The image width in pixels
+	 * @param height The image height in pixels
+	 * @param fanSettings A FanParam parameter list
+	 * @return a sinogram of the input image
+	 */
+	protected float[] imageToFanBeamSinogramFullPath(float[] image,int width,int height, FanParams fanSettings, boolean showProgress)
+	{
+		return imageToFanBeamSinogramFullPath(image,width,height, (float)fanSettings.pixSizeCM,
+				fanSettings.srcToDetCM, fanSettings.magnification, fanSettings.numAng, showProgress);
+	}
+
+	//*******************************************************************************
+
+	/**Creates a sinogram from an image using Fan Beam projection along the entire source to detector path
+	 *   It is an older version that is significantly slower than the shortened path method but is retained
+	 *   as it might become useful for treating x-ray beam path scatter.
+	 * @param image Reference to an NxN (square) floating point image
+	 * @param width The image width in pixels
+	 * @param height The image height in pixels
+	 * @param pixSizeCM The image pixel size in centimeters
+	 * @param srcToDetCM The source to detector distance in pixels
+	 * @param magnification A positive number for the fan projection magnification. In the real world always greater than 1
+	 * @param numAngles The number of projections between 0 and 360 degrees rotation
+	 * @param showProgress Display a progress bar
+	 * @return Reference to a floating point sinogram dimensions (width x magnification) x numAngles
+	 */
+	protected  float[] imageToFanBeamSinogramFullPath(float[] image,int width,int height, float pixSizeCM,
+			float srcToDetCM, float magnification, int numAngles, boolean showProgress)	
+	{
+		JProgressBar prgBar = null;
+		JFrame frame = null;
+		if(showProgress)
+		{
+		//Set up the progress bar
+		JPanel fldPanel = new JPanel();
+		frame = new JFrame("CT Scan Progress");		
+		prgBar = new JProgressBar(0,numAngles);
+
+		frame.setSize(400, 100);
+		frame.setLocationRelativeTo(null);
+
+		prgBar.setPreferredSize(new Dimension(350, 30));
+		prgBar.setValue(0);
+		prgBar.setStringPainted(true);			
+		fldPanel.add(prgBar);
+
+		frame.add(fldPanel);
+		frame.setVisible(true);
+		}
 		//Function always scans 360 degrees
 		//Rotating the image works poorly due to interpolation at material boundaries and
 		//the continued need for interpolation along ray paths.
@@ -309,7 +458,7 @@ public class FanProjectors
 		double ang;
 		for(ang=0.0,sinoRow=0;sinoRow<numAngles;ang+=angInc,sinoRow++)
 		{
-			prgBar.setValue(sinoRow);
+			if(showProgress) prgBar.setValue(sinoRow);
 			double theta	= Math.toRadians(ang);
 			double sinTheta	= Math.sin(theta);
 			double cosTheta	= Math.cos(theta);
@@ -329,7 +478,101 @@ public class FanProjectors
 				lineIntegrals[sinoCol + sinoRow*detWidthPix] = raySum;
 			}
 		}	
-		frame.dispose();
+		if(showProgress)frame.dispose();
+		return lineIntegrals;
+	}
+
+	//*******************************************************************************
+
+	/**Creates a sinogram from an image using Fan Beam projection
+	 * @param image Reference to an NxN (square) floating point image
+	 * @param width The image width in pixels
+	 * @param height The image height in pixels
+	 * @param pixSizeCM The image pixel size in centimeters
+	 * @param srcToDetCM The source to detector distance in pixels
+	 * @param magnification A positive number for the fan projection magnification. In the real world always greater than 1
+	 * @param numAngles The number of projections between 0 and 360 degrees rotation
+	 * @param showProgress Display a progress bar
+	 * @return Reference to a floating point sinogram dimensions (width x magnification) x numAngles
+	 */
+	public float[] imageToFanBeamSinogramVirtual(float[] image,int width,int height, float pixSizeCM,
+			float srcToDetCM, float magnification, int numAngles, boolean showProgress)	
+	{
+		JProgressBar prgBar = null;
+		JFrame frame = null;
+		if(showProgress)
+		{
+		//Set up the progress bar
+		JPanel fldPanel = new JPanel();
+		frame = new JFrame("CT Scan Progress");		
+		prgBar = new JProgressBar(0,numAngles);
+
+		frame.setSize(400, 100);
+		frame.setLocationRelativeTo(null);
+
+		prgBar.setPreferredSize(new Dimension(350, 30));
+		prgBar.setValue(0);
+		prgBar.setStringPainted(true);			
+		fldPanel.add(prgBar);
+
+		frame.add(fldPanel);
+		frame.setVisible(true);
+		}
+		//Function always scans 360 degrees
+		//Rotating the image works poorly due to interpolation at material boundaries and
+		//the continued need for interpolation along ray paths.
+		//This code leaves the image stationary and rotates "virtual" source and detector arrays
+		//that are just above and below the image being scanned. This significantly reduces 
+		//the source-detector ray paths as the arrays rotate around the center of the image with
+		//sub pixel accuracy. The projector then interpolates along the shortened ray paths.
+	
+		int rotXo = width/2;
+		int rotYo = height/2;
+
+		float srcToDetPix = srcToDetCM/(pixSizeCM*magnification);
+		float srcToSampPix = srcToDetPix/magnification;
+		float sampToDetPix =srcToDetPix - srcToSampPix;
+
+		int detWidthPix = (int) (width*magnification);
+		float start = -detWidthPix/2;
+
+		int sinoRows = numAngles;
+		double angInc = 360.0/(double)numAngles;
+		int sinoCol,sinoRow;
+
+		//Do the projection
+		DblPoint srcPt = new DblPoint();
+		DblPoint detPt = new DblPoint();
+		float[] lineIntegrals = new float[detWidthPix*sinoRows];
+		float detPix;
+
+		//over-sampling caused negligible improvement to resulting reconstructions
+		double overSample = 1;
+
+		double ang;
+		for(ang=0.0,sinoRow=0;sinoRow<numAngles;ang+=angInc,sinoRow++)
+		{
+			if(showProgress) prgBar.setValue(sinoRow);
+			double theta	= Math.toRadians(ang);
+			double sinTheta	= Math.sin(theta);
+			double cosTheta	= Math.cos(theta);
+
+			//get the source pixel coordinates
+			srcPt.x = (rotXo + srcToSampPix*sinTheta);
+			srcPt.y = (rotYo -srcToSampPix*cosTheta);
+
+			for(detPix=start,sinoCol=0;sinoCol<detWidthPix;detPix+=1,sinoCol++)
+			{			
+				//get the detector pixel coordinates
+				detPt.x = (float)(detPix*cosTheta-sampToDetPix*sinTheta+rotXo);
+				detPt.y = (float)(sampToDetPix*cosTheta+detPix*sinTheta+rotYo);
+
+				//Get the line sum				
+				float raySum = getRaySum(image,width,height, srcPt, detPt, overSample);
+				lineIntegrals[sinoCol + sinoRow*detWidthPix] = raySum;
+			}
+		}	
+		if(showProgress)frame.dispose();
 		return lineIntegrals;
 	}
 
