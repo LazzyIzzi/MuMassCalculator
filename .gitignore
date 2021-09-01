@@ -1,7 +1,7 @@
 #Java
 .class
 *.jar
-javadocs
+MuMassLibDocs
 
 #Text files
 *.txt
