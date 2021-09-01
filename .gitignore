@@ -1,2 +1,8 @@
+#Java
+.class
 *.jar
 javadocs
+
+#Text files
+*.txt
+*.csv
