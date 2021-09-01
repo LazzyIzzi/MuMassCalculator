@@ -28,13 +28,12 @@ See: https://imagej.nih.gov/ij/
 
 **Download:**
 
-A MuMassCalculator jar file, JavaDocs and sample ImageJ PlugIn are available at
+A MuMassCalculator jar file, JavaDocs and sample ImageJ PlugIns are available at
 
 https://drive.google.com/drive/folders/1xr8dBjpwd2bo6ZqFmwoKvBBDUoqaK0Bg?usp=sharing
 
 MuMassCalc_J8Lib.jar contains the java source and class files.
 MuMassCalculatorDocs contains JavaDocs html files
-My_MuMassPlotPlugin2.java contains the source code for a sample ImageJ Plugin
 
 
 **Use:**
@@ -43,11 +42,7 @@ My_MuMassPlotPlugin2.java contains the source code for a sample ImageJ Plugin
 
 Put MuMassCalc_J8Lib.jar and MuMassCalculatorDocs to the ImageJ/plugins/jars folder.
    
-Put My_MuMassPlotPlugin2.java example to the ImageJ/plugins folder.
-   
-Use ImageJ menu Plugins/Macros/Edit and browse to My_MuMassPlotPlugin2.java in the plugins folder.
-  
-In the plugin editor window Select File/ Compile and Run
+Put CT_Scanner_ImageJ_Plugins.jar examples to the ImageJ/plugins folder.
 
 **_Eclipse_**	put MuMassCalc_J8Lib.jar to your eclipse-workspace folder and add it to your project's buildpath.
 
