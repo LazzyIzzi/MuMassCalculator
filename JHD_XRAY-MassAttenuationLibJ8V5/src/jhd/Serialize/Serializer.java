@@ -17,6 +17,14 @@ public class Serializer
 	 */
 	public boolean SaveObjectAsSerialized(Object theObject, String path)
 	{
+		File objFile = new File(path);
+		if(!objFile.exists())			
+		{
+			//Create a path for the output file
+			objFile = new File(path);
+			objFile.getParentFile().mkdirs();
+		}
+
 		try
 		{
 			FileOutputStream fileOut = new FileOutputStream(path);
