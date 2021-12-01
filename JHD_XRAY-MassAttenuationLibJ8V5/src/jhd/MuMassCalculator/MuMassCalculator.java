@@ -7,6 +7,7 @@ import java.util.Arrays;
 import gray.AtomData.AtomData;
 import jhd.Formulas.FormulaList;
 import jhd.MathTools.Interpolation;
+import jhd.Projection.ParallelProjectors.ParallelParams;
 
 /*
  * https://www.nist.gov/pml/xcom-photon-cross-sections-database
@@ -43,7 +44,52 @@ import jhd.MathTools.Interpolation;
  * as well as total attenuation coefficients, for any element, 
  * or compound (Z= 1 to 100), at energies from 1 KeV to 100 GeV.
  */
-public class MuMassCalculator extends FormulaList{
+public class MuMassCalculator extends FormulaList
+{
+
+	public static class BeamHardenParams implements java.io.Serializable
+	{
+		/**Constructor for this serializable parameter block*/ 
+		public BeamHardenParams(){};
+		/**The conventional X-ray source anode (target) material*/
+		public String target;
+		/**The X-ray source accelerating potential, the upper limit on the X-ray energy*/
+		public double kv;
+		/**The X-ray source beam current*/
+		public double ma;
+		/**Divide the source spectrum into nBins discrete energies*/
+		public double kvInc;
+		/**The lower limit on the X-ray energy*/
+		public double kvMin;
+
+		//Filter
+		/**The filter material, typically Al, Cu, Sn, Mo*/
+		public String filter;
+		/**The filter thickness*/
+		public double filterCM;
+		/**The filter density*/
+		public double filterGmPerCC;
+
+		/**The image pixel size in CM. the code works in CGS units*/
+		public double pixSizeCM;
+
+		/**compound formula. Must be in Atom1:Count1:Atom2:Count2 format, for example Ca:1:C:1:O:3 for CaCO3 Calcite*/
+		public String matlFormula;
+		/**compound density in gm/cc*/
+		public double matlGmPerCC;
+		/**matl thickness(cm)*/
+		public double matlCM;
+
+		//Detector
+		/**The detector scintillator  formula, Must be in Atom1:Count1:Atom2:Count2 format, For example Cs:1:I:1 for CsI Cesium Iodide*/
+		public String detFormula;
+		/**The detector scintillator screen or detector element thickness in CM*/
+		public double detCM;
+		/**The detector scintillator screen or detector element density in gm/cc*/
+		public double detGmPerCC;
+		
+		public String plotChoice;
+	}
 	
 	/**
 	 * Returns the formula weight of the formula

@@ -295,8 +295,8 @@ public class AtomData {
 
 	//***********************************************************************
 	/**
-	 * Returns the atomic weight of the atom selected by setSymbol
-	 * @return The current atom's atomic weight in gm/mol
+	 * Returns the density of the atom selected by setSymbol
+	 * @return The current atom's density im gm/cc
 	 */
 	public double getAtomDensity() {
 		return density;
@@ -323,7 +323,7 @@ public class AtomData {
 	//***********************************************************************
 
 	/**
-	 * Returns the atomic weight of theAtom
+	 * Returns the density of theAtom
 	 * @param theAtom The symbol for the atom, e.g. "AU" for gold
 	 * @return The requested atom's density in gm/cc, -1 if incorrect atom symbol
 	 */

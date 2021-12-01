@@ -238,6 +238,7 @@ public class FanProjectors
 	 * @param width The image width in pixels
 	 * @param height The image height in pixels
 	 * @param fanSettings A FanParam parameter list
+	 * @param showProgress Display a progress bar while executing
 	 * @return a sinogram of the input image
 	 */
 	public float[] imageToFanBeamSinogram(float[] image,int width,int height, FanParams fanSettings, boolean showProgress)
