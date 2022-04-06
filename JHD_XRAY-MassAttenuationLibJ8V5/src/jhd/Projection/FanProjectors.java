@@ -1,11 +1,15 @@
 package jhd.Projection;
 
 import java.awt.Dimension;
+import java.util.HashSet;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+//import CT_Tools.common.MatlListTools2;
+//import CT_Tools.common.MatlListTools2.TagData;
+//import ij.IJ;
 import jhd.MathTools.Interpolation;
 import jhd.MuMassCalculator.*;
 
@@ -86,7 +90,7 @@ public class FanProjectors
 		/**Set to true to multiply sinogram floating point opacities by 6000 and convert result to 16-bit*/
 		
 	}
-	
+
 	//*******************************************************************************
 
 	static class DblPoint
@@ -101,6 +105,9 @@ public class FanProjectors
 		double x;
 		double y;		
 	}
+	
+	MuMassCalculator mmc = new MuMassCalculator();
+
 
 	//*******************************************************************************
 	 /**
@@ -113,7 +120,7 @@ public class FanProjectors
 	 * Used to validate beam hardening correction methods.
 	
 	 * @param ctSet A BremFanParams Parameter block
-	 * @param image A 1D reference to a float image
+	 * @param image A 1D reference to a tagged float image
 	 * @param width The image width
 	 * @param height The image height
 	 * @return A 1D reference to a sinogram width*numViews
@@ -137,7 +144,7 @@ public class FanProjectors
 		frame.add(fldPanel);
 		frame.setVisible(true);
 
-		MuMassCalculator mmc = new MuMassCalculator();
+		//MuMassCalculator mmc = new MuMassCalculator();
 		
 		//Buffer to hold a sinogram of the detected counts at one energy
 		float[] sino = null;
@@ -196,7 +203,6 @@ public class FanProjectors
 			//Sum the Counts
 			srcFiltDetIntg+=srcFiltDet;
 
-
 			// get the attenuation of the materials in the list
 			float[] muLin = new float[ctSet.matlFormula.length];
 			for(int tag =1;tag<ctSet.matlFormula.length;tag++)
@@ -231,6 +237,237 @@ public class FanProjectors
 		return bremSino;
 	}
 
+	//*******************************************************************************
+	 /**
+	  * Requires a segmented 2D float image where each material has been assigned an integer tag
+	 * Requires image pixel size units in CM
+	 * Requires the chemical formula and density of each tagged component
+	 * The tags are converted to x-ray cross-sections over a range of x-ray energies
+	 * Projections are calculated using a simplified Source,Filter,Sample,Detector model
+	 * The model records photon counts and converts those to measured sample attenuation
+	 * Used to validate beam hardening correction methods.
+	
+	 * @param ctSet A BremFanParams Parameter block
+	 * @param image A 1D reference to a tagged float image
+	 * @param width The image width
+	 * @param height The image height
+	 * @return A 1D reference to a sinogram width*numViews
+	 */
+	public float[] imageToBremsstrahlungFanBeamSinogram2(BremFanParams ctSet, float[] image, int width, int height)
+	{
+
+		//Set up the progress bar
+		JPanel fldPanel = new JPanel();
+		JFrame frame = new JFrame("CT Scan Progress");		
+		JProgressBar prgBar = new JProgressBar(0,ctSet.nBins+1);
+
+		frame.setSize(400, 100);
+		frame.setLocationRelativeTo(null);
+
+		prgBar.setPreferredSize(new Dimension(350, 30));
+		prgBar.setValue(0);
+		prgBar.setStringPainted(true);			
+		fldPanel.add(prgBar);
+
+		frame.add(fldPanel);
+		frame.setVisible(true);
+
+		//MuMassCalculator mmc = new MuMassCalculator();
+		
+		//Buffer to hold a sinogram of the detected counts at one energy
+		float[] sino = null;
+		//buffer to sum the individual energy sinograms
+		float[] bremSino = new float[(int)(width*ctSet.numAng*ctSet.magnification)];
+
+		//Swap min and max kv if necessary
+		if(ctSet.minKV > ctSet.kv)
+		{
+			double temp = ctSet.minKV;
+			ctSet.minKV = ctSet.kv;
+			ctSet.kv = temp;
+		}
+
+		double kvInc = (ctSet.kv-ctSet.minKV)/ctSet.nBins;
+
+
+		int numKev = ctSet.nBins +1;
+
+
+		//The Scanner absorbances
+		double filterTau;
+		double detTau;
+
+		//The Spectra, Some currently unnecessary spectra commented out
+		//The source
+		double src;  //The source intensity (counts)
+		double srcFilt; //The source counts after filtration
+		double srcFiltDet; //The filtered source  detected counts
+
+		//Integration holds all of the filtered source detected counts 
+		double srcFiltDetIntg=0;
+
+		int i=0;
+		double keV;
+		float[] muLinImage=null;
+		
+		//Get the tags from the image
+		int[] tagArr = getUniqueTags(image);
+				
+		for(i=0, keV = ctSet.kv; i<numKev; i++, keV-= kvInc)
+		{			
+			prgBar.setValue(i);
+
+			//The Source energy
+			double meV = keV / 1000;
+
+			//The filter attenuation
+			filterTau = mmc.getMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
+			//The detector attenuation
+			detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
+
+			//Get the source properties
+			//Counts
+			src = mmc.spectrumKramers(ctSet.kv, ctSet.ma, ctSet.target, meV);//get the source continuum intensity spectrum			
+			//Filtered Counts
+			srcFilt = src * Math.exp(-filterTau);           
+			//Detected Counts without sample
+			srcFiltDet = srcFilt * (1 - Math.exp(-detTau));
+			//Sum the Counts
+			srcFiltDetIntg+=srcFiltDet;
+			//Make a copy of the tagged-segmented image
+			muLinImage = image.clone();
+			// convert tags to attenuation using indirect addressing
+			tagsToLinearAttn(muLinImage,tagArr,ctSet,meV);
+			//Create the sinogram projection of the material linear attenuation
+			sino = imageToFanBeamSinogram(muLinImage, width, height, 
+										(float)ctSet.pixSizeCM, ctSet.srcToDetCM,
+										ctSet.magnification, ctSet.numAng,false);
+			//Sum The sinogram as counts
+			double detCaptured = (1 - Math.exp(-detTau));
+			for(int j=0;j<sino.length;j++)
+			{
+				bremSino[j] += ((srcFilt * Math.exp(-sino[j] *ctSet.pixSizeCM)) * detCaptured);   
+			}
+		}
+		//Convert the accumulated detected counts to tau
+		for(int j=0;j<bremSino.length;j++) bremSino[j] = (float)(Math.log(srcFiltDetIntg/bremSino[j]));
+		frame.dispose();
+		return bremSino;
+	}
+
+	//********************************************************************************************
+	
+	private boolean tagsToLinearAttn(float[] imageData, int[] tagArr, BremFanParams ctSet, double meV)
+	{
+		//This routine uses double indirect addressing for fast conversion of 
+		//tag values to the linear attenuation of each tag's formula and density
+		//It does not require that the tags in the materials data in ctSet
+		//correspond to an array index.
+		//MuMassCalculator mmc = new MuMassCalculator();
+		
+		
+		//check if tagArr is bigger than the tagList
+		//if it is, it is probably not a tag image
+		if(tagArr.length > ctSet.matlTag.length)
+		{
+			System.out.println("Error: There are more tags in the input image than\n"
+								+ "there are tags in the materials list.");
+
+//			IJ.showMessage("Error", "There are more tags in the input image than\n"
+//					+ "there are tags in the materials list.");
+			return false;
+		}
+		
+		// Find the position of each tag in the TagData list
+		int[] tagIndex = new int[tagArr.length];
+		for(int j=0;j<tagArr.length;j++)
+		{
+			tagIndex[j]=-1;//-1 indicates a match was not found, zero is a valid tag index
+			for(int i=0;i< ctSet.matlTag.length;i++)
+			{
+				if(tagArr[j]==ctSet.matlTag[i])
+				{
+					tagIndex[j] = i;
+				}
+			}
+		}
+				
+		//Get biggest matlTag
+		int  maxTag = Integer.MIN_VALUE;
+		for(int i = 0 ; i<tagArr.length;i++)
+		{
+			if(tagArr[i] > maxTag) maxTag = tagArr[i];
+		}
+		
+		//Create an array to hold the linear attenuation values
+		float[] muLinArr = new float[maxTag+1];
+		
+		//Set the muLin look-up values for each tag
+		for(int i=0;i<tagIndex.length;i++)
+		{
+			if(tagIndex[i]>0)
+			{
+				String 	formula= ctSet.matlFormula[tagIndex[i]];	
+				double gmPerCC = ctSet.matlGmPerCC[tagIndex[i]];
+				double muLin = mmc.getMuMass(formula, meV, "TotAttn")*gmPerCC;			
+				muLinArr[tagArr[i]]= (float) muLin;
+			}
+			else
+			{
+				System.out.println("Tag " +tagArr[i]+ " was not found in the materials list");
+				//IJ.log("Tag " +tagArr[i]+ " was not found in the materials list");
+			}
+		}
+		
+		//Convert the image to linear Attenuation
+		for(int i=0;i<imageData.length;i++)
+		{
+			try
+			{
+				imageData[i] = muLinArr[(int)imageData[i]];
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return true;
+	}
+	
+	//********************************************************************************************
+
+	/**Scans an float image for unique pixel tag values
+	 * @param imageData
+	 * @return a list of integer tag values used in the image
+	 */
+	private int[] getUniqueTags( float[] imageData)
+	{
+		// from https://www.javatpoint.com/find-unique-elements-in-array-java
+
+		HashSet<Float> hashset = new HashSet<>();   
+		for (int i = 0; i < imageData.length; i++)   
+		{   
+			if (!hashset.contains(imageData[i]))   
+			{   
+				hashset.add(imageData[i]);   
+			}   
+		}
+
+		//Convert hash to float array
+		Float[] tagList = hashset.toArray(new Float[hashset.size()]);
+		int[] tagArr = new int[hashset.size()];
+		int i=0;
+		//Convert to primitive array
+		for(Float fObj : tagList)
+		{
+			tagArr[i]=fObj.intValue();
+			i++;
+		}
+
+		//print hash set that contains distinct element  
+		return tagArr;
+	}
+		
 	//*******************************************************************************
 	
 	/**Wrapper method that accepts the parameter block instead of arguments.
