@@ -20,7 +20,7 @@ Tabulated XCOM data is used with permission
 
 Unlike XCOM, MuMassCalculator does not support mixtures.
 
-MuMassCalculator was developed with JavaSE-1.8 (64-bit) and tested in the Eclipse IDE and as an ImageJ PlugIn with ImageJ 1.53i
+MuMassCalculator was developed with JavaSE-1.8 (64-bit) and tested in the Eclipse IDE and as an ImageJ PlugIn with ImageJ 1.53k
 
 MuMassCalculator has no ImageJ dependencies.
 
@@ -28,21 +28,22 @@ See: https://imagej.nih.gov/ij/
 
 **Download:**
 
-A MuMassCalculator jar file, JavaDocs and sample ImageJ PlugIns are available at
+A MuMassCalculator jar file can be downloaded from my 
+<a href="https://drive.google.com/file/d/1Drx8cdO0uyNQ6wNzUjGbt-1dvxGuL59F/view?usp=sharing" target="_blank">Google Drive</a> and contains the java source and class files.
+<br>Java docs pages can be viewed
+<a href="https://github.com/LazzyIzzi/LazzyIzzi.github.io/tree/main/MuMassCalculatorDocs" target="_blank"> here</a>.  
+Descriptions of the library and related ImageJ plugins based on this library can be viewed and downloaded from
+<a href="https://github.com/LazzyIzzi/LazzyIzzi.github.io" target="_blank"> here</a>.  
 
-https://drive.google.com/drive/folders/1xr8dBjpwd2bo6ZqFmwoKvBBDUoqaK0Bg?usp=sharing
-
-MuMassCalc_J8Lib.jar contains the java source and class files.
-MuMassCalculatorDocs contains JavaDocs html files
 
 
 **Use:**
 
 **_ImageJ_**
 
-Put MuMassCalc_J8Lib.jar and MuMassCalculatorDocs to the ImageJ/plugins/jars folder.
-   
-Put CT_Scanner_ImageJ_Plugins.jar examples to the ImageJ/plugins folder.
+Put the MuMassCalculator Jar and to the ImageJ/plugins/jars folder.   
+Put CT_Tool_Plugins.jar examples to the ImageJ/plugins folder.
+Restart ImageJ.
 
 **_Eclipse_**	put MuMassCalc_J8Lib.jar to your eclipse-workspace folder and add it to your project's buildpath.
 
@@ -56,14 +57,15 @@ import jhd.MuMassCalculator.*;
 	public static void main(String[] args) {
 		MuMassCalculator mmc = new MuMassCalculator();
 		
-		double[] result = mmc.getMevArray("CA:1:C:1:O:3", .001, .1);
-		
+		//get the tabulated photon energies for calcium carbonate between .001 and .1MeV
+		double[] result = mmc.getMevArray("CA:1:C:1:O:3", .001, .1);		
 		for(double mev : result)
 		{
 			System.out.println(mev);
 		}
 		
-		double theMuMass = mmc.getAtomMuMass("AC", .1, "Totattn");
+		//get the Total attenuation in cm2/gm for actinium at .1 MeV
+		double theMuMass = mmc.getAtomMuMass("AC", .1, "Totattn");		
 		System.out.println(theMuMass);
 	}
  
