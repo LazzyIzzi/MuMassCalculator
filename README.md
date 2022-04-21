@@ -31,9 +31,9 @@ See: https://imagej.nih.gov/ij/
 A MuMassCalculator jar file can be downloaded from my 
 <a href="https://drive.google.com/file/d/1Drx8cdO0uyNQ6wNzUjGbt-1dvxGuL59F/view?usp=sharing" target="_blank">Google Drive</a> and contains the java source and class files.
 <br>Java docs pages can be viewed
-<a href="https://github.com/LazzyIzzi/LazzyIzzi.github.io/tree/main/MuMassCalculatorDocs" target="_blank"> here</a>.  
+<a href="https://lazzyizzi.github.io/FloodFillDocs/jhd/FloodFill/package-summary.html" target="_blank"> here</a>.  
 Descriptions of the library and related ImageJ plugins based on this library can be viewed and downloaded from
-<a href="https://github.com/LazzyIzzi/LazzyIzzi.github.io" target="_blank"> here</a>.  
+<a href="https://lazzyizzi.github.io/" target="_blank"> here</a>.  
 
 
 
