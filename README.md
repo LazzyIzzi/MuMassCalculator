@@ -27,8 +27,8 @@ MuMassCalculator has no ImageJ dependencies.
 See: https://imagej.nih.gov/ij/
 
 **Download:**
-
-A MuMassCalculator jar file can be downloaded from my 
+For convenience, please open the links below in new tabs or windows.
+<br>A MuMassCalculator jar file can be downloaded from my 
 <a href="https://drive.google.com/file/d/1Drx8cdO0uyNQ6wNzUjGbt-1dvxGuL59F/view?usp=sharing" target="_blank">Google Drive</a> and contains the java source and class files. Note: MuMassCalculator is named CT_Tools_Lib for consistency with the naming of related ImageJ plugins.
 <br>Java docs pages can be viewed
 <a href="https://lazzyizzi.github.io/MuMassCalculatorDocs/index.html" target="_blank"> here</a>.  
@@ -45,12 +45,14 @@ Put the MuMassCalculator Jar and to the ImageJ/plugins/jars folder.
 Put CT_Tool_Plugins.jar examples to the ImageJ/plugins folder.
 Restart ImageJ.
 
-**_Eclipse_**	put MuMassCalc_J8Lib.jar to your eclipse-workspace folder and add it to your project's buildpath.
+**_Eclipse_**
+
+Put the MuMassCalculator Jar in your eclipse-workspace folder and add it to your project's buildpath.
 
 An eclipse example class file
 
 
-import jhd.MuMassCalculator.*;
+	import jhd.MuMassCalculator.*;
 
 	public class MuMassTest {
 
