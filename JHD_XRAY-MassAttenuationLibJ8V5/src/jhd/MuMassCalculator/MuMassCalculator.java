@@ -47,6 +47,10 @@ import jhd.Projection.ParallelProjectors.ParallelParams;
 public class MuMassCalculator extends FormulaList
 {
 
+	/**Wrapper class for serialization boiler plate.
+	 * @author John H Dunsmuir
+	 *
+	 */
 	public static class BeamHardenParams implements java.io.Serializable
 	{
 		/**Constructor for this serializable parameter block*/ 
@@ -88,7 +92,7 @@ public class MuMassCalculator extends FormulaList
 		/**The detector scintillator screen or detector element density in gm/cc*/
 		public double detGmPerCC;
 		
-		public String plotChoice;
+		//public String plotChoice;
 	}
 	
 	/**
