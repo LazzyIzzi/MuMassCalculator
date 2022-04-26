@@ -29,7 +29,7 @@ See: https://imagej.nih.gov/ij/
 **Download:**
 For convenience, please open the links below in new tabs or windows.
 <br>A MuMassCalculator jar file can be downloaded from my 
-<a href="https://drive.google.com/file/d/1Drx8cdO0uyNQ6wNzUjGbt-1dvxGuL59F/view?usp=sharing" target="_blank">Google Drive</a> and contains the java source and class files. Note: MuMassCalculator is named CT_Tools_Lib for consistency with the naming of related ImageJ plugins.
+<a href="https://drive.google.com/file/d/1Drx8cdO0uyNQ6wNzUjGbt-1dvxGuL59F/view?usp=sharing" target="_blank">Google Drive</a> and contains the java source and class files.
 <br>Java docs pages can be viewed
 <a href="https://lazzyizzi.github.io/MuMassCalculatorDocs/index.html" target="_blank"> here</a>.  
 Descriptions of the library and related ImageJ plugins based on this library can be viewed and downloaded from
