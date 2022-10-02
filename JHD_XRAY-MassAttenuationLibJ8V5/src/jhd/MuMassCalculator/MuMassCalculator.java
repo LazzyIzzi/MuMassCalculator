@@ -92,7 +92,7 @@ public class MuMassCalculator extends FormulaList
 		/**The detector scintillator screen or detector element density in gm/cc*/
 		public double detGmPerCC;
 		
-		//public String plotChoice;
+		public String plotChoice;
 	}
 	
 	/**
