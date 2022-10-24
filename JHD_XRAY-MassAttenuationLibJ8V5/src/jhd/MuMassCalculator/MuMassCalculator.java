@@ -286,8 +286,7 @@ public class MuMassCalculator extends FormulaList
         double[] mevArr,muMassRatio,mevSoln;
         int i,j;
         
-        //add ":1" to single atoms bug fix 10-24-2022
-        if(!formula1.contains(":"))
+        if(!formula1.contains(":"))      //add ":1" to single atoms bug fix 10-24-2022       	 
         {
         	formula1 = formula1 +":1";
         }
