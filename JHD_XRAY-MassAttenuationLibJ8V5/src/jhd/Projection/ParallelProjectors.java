@@ -32,7 +32,7 @@ public class ParallelProjectors
 		public int numAng;
 	}
 	
-	/**Parameter block for fan projecting a tagged 2D image to a sinogram using a simplified conventional CT scanner simulation.
+	/**Parameter block for parallel projecting a tagged 2D image to a sinogram using a simplified conventional CT scanner simulation.
 	 * @author John Dunsmuir
 	 */
 	public static class BremParallelParams extends ParallelParams
@@ -242,7 +242,9 @@ public class ParallelProjectors
 	 */
 	public float[] imageToBremsstrahlungParallelSinogram2(BremParallelParams ctSet, float[] image, int width, int height)
 	{
-
+		//Differs from imageToBremsstrahlungParallelSinogram by creating a clone 
+		//of the tag image and modifying its primitive data field to become linear attenuation.
+		
 		//Set up the progress bar
 		JPanel fldPanel = new JPanel();
 		JFrame frame = new JFrame("CT Scan Progress");		
