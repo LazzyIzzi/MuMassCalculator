@@ -7,11 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-//import CT_Tools.common.MatlListTools2;
-//import CT_Tools.common.MatlListTools2.TagData;
-//import ij.IJ;
-import jhd.MathTools.Interpolation;
-import jhd.MuMassCalculator.*;
+import jhd.Interpolators.*;
+import jhd.MuMass.*;
 
 /**
  * Create sinograms from square floating point images
@@ -27,6 +24,7 @@ public class FanProjectors
 	 */
 	public static class FanParams implements java.io.Serializable
 	{
+		private static final long serialVersionUID = 1L;
 		/**Constructor for this serializable parameter block*/ 
 		public FanParams(){};
 		/** The normal maximum angular range for a CT scan of this type*/
@@ -49,6 +47,7 @@ public class FanProjectors
 	 */
 	public static class BremFanParams extends FanParams
 	{
+		private static final long serialVersionUID = 1L;
 		/**Constructor for this serializable parameter block*/ 
 		public BremFanParams(){};
 		/**The conventional X-ray source anode (target) material*/
@@ -106,7 +105,7 @@ public class FanProjectors
 		double y;		
 	}
 	
-	MuMassCalculator mmc = new MuMassCalculator();
+	XrayCalculator mmc = new XrayCalculator();
 
 
 	//*******************************************************************************
@@ -189,9 +188,9 @@ public class FanProjectors
 			double meV = keV / 1000;
 
 			//The filter attenuation
-			filterTau = mmc.getMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
+			filterTau = mmc.getFormulaMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
 			//The detector attenuation
-			detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
+			detTau = mmc.getFormulaMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
 
 			//Get the source properties
 			//Counts
@@ -207,7 +206,7 @@ public class FanProjectors
 			float[] muLin = new float[ctSet.matlFormula.length];
 			for(int tag =1;tag<ctSet.matlFormula.length;tag++)
 			{
-				muLin[tag] = (float) ( mmc.getMuMass(ctSet.matlFormula[tag], meV, "TotAttn") * ctSet.matlGmPerCC[tag]);        	
+				muLin[tag] = (float) ( mmc.getFormulaMuMass(ctSet.matlFormula[tag], meV, "TotAttn") * ctSet.matlGmPerCC[tag]);        	
 			}
 
 			//Make a copy of the tagged-segmented image
@@ -321,9 +320,9 @@ public class FanProjectors
 			double meV = keV / 1000;
 
 			//The filter attenuation
-			filterTau = mmc.getMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
+			filterTau = mmc.getFormulaMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
 			//The detector attenuation
-			detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
+			detTau = mmc.getFormulaMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
 
 			//Get the source properties
 			//Counts
@@ -405,11 +404,11 @@ public class FanProjectors
 		//Set the muLin look-up values for each tag
 		for(int i=0;i<tagIndex.length;i++)
 		{
-			if(tagIndex[i]>0)
+			if(tagIndex[i]>=0)
 			{
 				String 	formula= ctSet.matlFormula[tagIndex[i]];	
 				double gmPerCC = ctSet.matlGmPerCC[tagIndex[i]];
-				double muLin = mmc.getMuMass(formula, meV, "TotAttn")*gmPerCC;			
+				double muLin = mmc.getFormulaMuMass(formula, meV, "TotAttn")*gmPerCC;			
 				muLinArr[tagArr[i]]= (float) muLin;
 			}
 			else

@@ -7,8 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-import jhd.MathTools.Interpolation;
-import jhd.MuMassCalculator.*;
+import jhd.Interpolators.*;
+import jhd.MuMass.*;
 
 /**
  * Create sinograms from square floating point images
@@ -97,7 +97,7 @@ public class ParallelProjectors
 		double y;		
 	}
 
-	MuMassCalculator mmc = new MuMassCalculator();
+	XrayCalculator mmc = new XrayCalculator();
 
 	//*******************************************************************************
 
@@ -176,9 +176,9 @@ public class ParallelProjectors
 			double meV = keV / 1000;
 
 			//The filter attenuation
-			filterTau = mmc.getMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
+			filterTau = mmc.getFormulaMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
 			//The detector attenuation
-			detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
+			detTau = mmc.getFormulaMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
 
 			//Get the source properties
 			//Counts
@@ -197,7 +197,7 @@ public class ParallelProjectors
 			float[] muLin = new float[ctSet.matlFormula.length];
 			for(int tag =1;tag<ctSet.matlFormula.length;tag++)
 			{
-				muLin[tag] = (float) ( mmc.getMuMass(ctSet.matlFormula[tag], meV, "TotAttn") * ctSet.matlGmPerCC[tag]);        	
+				muLin[tag] = (float) ( mmc.getFormulaMuMass(ctSet.matlFormula[tag], meV, "TotAttn") * ctSet.matlGmPerCC[tag]);        	
 			}
 
 			// convert tags to attenuation using indirect addressing
@@ -307,9 +307,9 @@ public class ParallelProjectors
 			double meV = keV / 1000;
 
 			//The filter attenuation
-			filterTau = mmc.getMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
+			filterTau = mmc.getFormulaMuMass(ctSet.filter, meV, "TotAttn") * ctSet.filterCM * ctSet.filterGmPerCC;           
 			//The detector attenuation
-			detTau = mmc.getMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
+			detTau = mmc.getFormulaMuMass(ctSet.detFormula, meV, "TotAttn") * ctSet.detCM * ctSet.detGmPerCC;
 
 			//Get the source properties
 			//Counts
@@ -391,11 +391,11 @@ public class ParallelProjectors
 		//Set the muLin look-up values for each tag
 		for(int i=0;i<tagIndex.length;i++)
 		{
-			if(tagIndex[i]>0)
+			if(tagIndex[i]>=0)
 			{
 				String 	formula= ctSet.matlFormula[tagIndex[i]];	
 				double gmPerCC = ctSet.matlGmPerCC[tagIndex[i]];
-				double muLin = mmc.getMuMass(formula, meV, "TotAttn")*gmPerCC;			
+				double muLin = mmc.getFormulaMuMass(formula, meV, "TotAttn")*gmPerCC;			
 				muLinArr[tagArr[i]]= (float) muLin;
 			}
 			else
