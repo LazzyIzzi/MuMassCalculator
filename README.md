@@ -66,7 +66,7 @@ An eclipse example class file
 		}
 		
 		//get the Total attenuation in cm2/gm for actinium at .1 MeV
-		double theMuMass = xrc.getFormulaMuMass("AC", .1, "Totattn");		
+		double theMuMass = xrc.getFormulaMuMass("AC", .1, "TotAttn");		
 		System.out.println(theMuMass);
 	}
  
