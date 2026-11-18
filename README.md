@@ -39,35 +39,34 @@ Descriptions of the library and related ImageJ plugins based on this library can
 
 **Use:**
 
-**_ImageJ_**
-
+**_ImageJ_**<br>
 Put the MuMassCalculator Jar and to the ImageJ/plugins/jars folder.   
-Put CT_Tool_Plugins.jar examples to the ImageJ/plugins folder.
-Restart ImageJ.
+Restart ImageJ.<br>
+import jhd.MuMass.XrayCalculator; in your plugin's code<br>
+in your plugin instantiate using XrayCalculator xrc = new XrayCalculator();
 
-**_Eclipse_**
-
-Put the MuMassCalculator Jar in your eclipse-workspace folder and add it to your project's buildpath.
+**_Eclipse_**<br>
+Put the MuMassCalculator Jar in your eclipse-workspace external jars folder and add it to your project's buildpath.
 
 An eclipse example class file
 
 
-	import jhd.MuMassCalculator.*;
+	import jhd.MuMass.XrayCalculator;
 
 	public class MuMassTest {
 
 	public static void main(String[] args) {
-		MuMassCalculator mmc = new MuMassCalculator();
+		XrayCalculator xrc = new XrayCalculator();
 		
 		//get the tabulated photon energies for calcium carbonate between .001 and .1MeV
-		double[] result = mmc.getMevArray("CA:1:C:1:O:3", .001, .1);		
+		double[] result = xrc.getFormulaMevArray("CA:1:C:1:O:3", .001, .1);		
 		for(double mev : result)
 		{
 			System.out.println(mev);
 		}
 		
 		//get the Total attenuation in cm2/gm for actinium at .1 MeV
-		double theMuMass = mmc.getAtomMuMass("AC", .1, "Totattn");		
+		double theMuMass = xrc.getFormulaMuMass("AC", .1, "Totattn");		
 		System.out.println(theMuMass);
 	}
  
